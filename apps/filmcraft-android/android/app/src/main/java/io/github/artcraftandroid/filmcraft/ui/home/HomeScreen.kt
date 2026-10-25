@@ -37,6 +37,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -141,8 +143,10 @@ fun HomeScreen(vm: AppViewModel) {
 private fun HomeTopBar(vm: AppViewModel) {
     var menu by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 4.dp).testTag("home_screen_top_bar"), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-            Image(painterResource(R.drawable.ic_launcher_tile), contentDescription = "AVE", modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+            Image(painterResource(R.drawable.ic_launcher_tile), contentDescription = "AVE", modifier = Modifier.size(36.dp).clip(RoundedCornerShape(9.dp)))
+            Spacer(Modifier.width(10.dp))
+            Text("AVE", style = FcType.Header, fontWeight = FontWeight.Black, letterSpacing = 2.sp, color = Fc.Title)
         }
         Spacer(Modifier.weight(1f))
         Box {

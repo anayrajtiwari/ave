@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Deep obsidian space background -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D111A" />
+      <stop offset="50%" stop-color="#131B2B" />
+      <stop offset="100%" stop-color="#080C14" />
+    </linearGradient>
+
+    <!-- Refined specular border -->
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#818CF8" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#F43F5E" stop-opacity="0.4" />
+    </linearGradient>
+
+    <!-- Electric Cyan to Azure (A wing) -->
+    <linearGradient id="grad-a" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="50%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+
+    <!-- Royal Azure to Violet (V connector) -->
+    <linearGradient id="grad-v" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="60%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+
+    <!-- Dynamic Playhead Prism (Center ▶) -->
+    <linearGradient id="grad-play" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#F43F5E" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+
+    <!-- Timeline Layer Bars (E tracks) -->
+    <linearGradient id="grad-e" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <!-- Soft studio lighting -->
+    <radialGradient id="core-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.15" />
+      <stop offset="60%" stop-color="#6366F1" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Crisp drop shadow -->
+    <filter id="mark-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000000" flood-opacity="0.7" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Canvas Base (112px radius on 512px canvas matches modern Android squircle) -->
+  <rect x="12" y="12" width="488" height="488" rx="112" fill="url(#bg)" />
+  <rect x="12" y="12" width="488" height="488" rx="112" fill="none" stroke="url(#border-grad)" stroke-width="2.5" />
+
+  <!-- Ambient Light Reflection -->
+  <circle cx="256" cy="256" r="200" fill="url(#core-glow)" />
+
+  <!-- The Unified Geometric AVE Video Mark -->
+  <g filter="url(#mark-shadow)">
+    <!-- Part 1: Ascending 'A' Pillar -->
+    <!-- Starts at (120, 370), angles up to peak (230, 130), with angled crossbar -->
+    <path d="M 132 376 
+             C 120 376 112 366 116 354 
+             L 214 136 
+             C 220 122 236 122 242 136 
+             L 272 202
+             L 226 202
+             L 174 326
+             L 230 326
+             L 242 352
+             C 246 362 238 376 226 376 
+             Z" 
+          fill="url(#grad-a)" />
+
+    <!-- Part 2: Dynamic Center Playhead Prism ▶ -->
+    <!-- Interlocks with A and points toward timeline -->
+    <path d="M 228 206 
+             C 228 196 238 190 248 195 
+             L 344 246 
+             C 354 251 354 265 344 270 
+             L 248 321 
+             C 238 326 228 320 228 310 
+             Z" 
+          fill="url(#grad-play)" />
+
+    <!-- Part 3: Descending 'V' Blade / Forward Flow -->
+    <path d="M 246 138 
+             C 252 126 268 126 274 138 
+             L 326 248 
+             L 300 248 
+             L 260 162 
+             Z" 
+          fill="url(#grad-v)" opacity="0.9" />
+
+    <!-- Part 4: Three 'E' Timeline Tracks (Video layers: Overlay, Main Cut, Audio) -->
+    <!-- Top Track (Overlay Layer) -->
+    <rect x="352" y="194" width="58" height="18" rx="9" fill="url(#grad-e)" />
+    
+    <!-- Middle Track (Main Sequence Layer, extended with cut accent) -->
+    <rect x="368" y="247" width="68" height="18" rx="9" fill="#F43F5E" />
+    
+    <!-- Bottom Track (Audio/Bass Layer) -->
+    <rect x="352" y="300" width="50" height="18" rx="9" fill="url(#grad-e)" opacity="0.75" />
+  </g>
+</svg>

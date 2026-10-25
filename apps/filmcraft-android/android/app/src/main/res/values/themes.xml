@@ -2,8 +2,8 @@
 <resources>
     <!-- the editor's dark surface, so nothing flashes before the first frame -->
     <color name="window_background">#FF000000</color>
-    <!-- FilmCraft violet, the app icon's field (assets/app-icon/README.md) -->
-    <color name="ic_launcher_background">#FF8B5CF6</color>
+    <!-- AVE obsidian, the app icon's field -->
+    <color name="ic_launcher_background">#FF0B0F19</color>
 
     <style name="Theme.FilmCraft" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>

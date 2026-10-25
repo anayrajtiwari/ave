@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Deep obsidian base gradient with subtle cool glow -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F1420" />
+      <stop offset="50%" stop-color="#141B2D" />
+      <stop offset="100%" stop-color="#090D15" />
+    </linearGradient>
+
+    <!-- Sleek border highlight -->
+    <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.5" />
+      <stop offset="40%" stop-color="#818CF8" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#F43F5E" stop-opacity="0.3" />
+    </linearGradient>
+
+    <!-- Electric Cyan to Azure Gradient (A-stem) -->
+    <linearGradient id="cyan-azure" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="100%" stop-color="#3A7BD5" />
+    </linearGradient>
+
+    <!-- Vivid Violet to Magenta Gradient (V-stem) -->
+    <linearGradient id="violet-magenta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <!-- Kinetic Amber-Coral Gradient (Playhead Triangle) -->
+    <linearGradient id="play-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="60%" stop-color="#F43F5E" />
+      <stop offset="100%" stop-color="#FB7185" />
+    </linearGradient>
+
+    <!-- Timeline Layer Bars Gradient -->
+    <linearGradient id="timeline-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+
+    <filter id="inner-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24" result="blur" />
+    </filter>
+  </defs>
+
+  <!-- Squircle App Icon Container -->
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#bg)" />
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="none" stroke="url(#rim)" stroke-width="2.5" />
+
+  <!-- Ambient Light Reflection -->
+  <ellipse cx="256" cy="110" rx="160" ry="60" fill="#38BDF8" opacity="0.06" filter="url(#inner-glow)" />
+  <ellipse cx="256" cy="270" rx="140" ry="140" fill="#6366F1" opacity="0.07" filter="url(#inner-glow)" />
+
+  <!-- Group with Drop Shadow -->
+  <g filter="url(#shadow)">
+    <!-- 1. The Bold 'A' Ascender & Apex Blade -->
+    <!-- Upward diagonal from bottom-left to top peak -->
+    <path d="M 116 356 L 222 144 C 228 132 242 126 254 132 C 262 136 266 144 266 152 L 204 356 C 200 368 186 376 174 372 C 162 368 156 354 160 342 L 200 238 L 148 342 C 144 352 134 360 122 358 C 112 356 108 344 116 332 Z"
+          fill="url(#cyan-azure)" />
+
+    <!-- 2. The Interlocking 'V' Descender Blade -->
+    <path d="M 238 140 L 302 344 C 306 356 298 368 286 372 C 274 376 262 368 258 356 L 208 194 Z"
+          fill="url(#violet-magenta)" opacity="0.95" />
+
+    <!-- 3. The Central Dynamic Playhead Symbol (▶) -->
+    <!-- Crisp, forward-leaning video vector -->
+    <path d="M 232 208 C 232 198 243 192 252 197 L 332 245 C 341 250 341 262 332 267 L 252 315 C 243 320 232 314 232 304 Z"
+          fill="url(#play-grad)" />
+
+    <!-- 4. The 'E' Timeline Tracks (Video Sequence Layers) -->
+    <!-- Layer 3: Upper Graphic Lane -->
+    <rect x="344" y="196" width="62" height="16" rx="8" fill="url(#timeline-grad)" />
+    <!-- Layer 2: Main Active Video Track -->
+    <rect x="358" y="248" width="72" height="16" rx="8" fill="#F43F5E" />
+    <!-- Layer 1: Audio / Baseline Track -->
+    <rect x="344" y="300" width="56" height="16" rx="8" fill="url(#timeline-grad)" opacity="0.8" />
+  </g>
+
+  <!-- Clean, Razor-Sharp Brand Typography -->
+  <text x="256" y="440"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
+        font-size="30"
+        font-weight="900"
+        letter-spacing="14"
+        fill="#E2E8F0">AVE</text>
+
+  <!-- Micro-subline: Android Video Editor -->
+  <text x="256" y="464"
+        text-anchor="middle"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
+        font-size="11"
+        font-weight="600"
+        letter-spacing="4"
+        fill="#64748B">VIDEO EDITOR</text>
+</svg>
