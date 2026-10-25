@@ -108,7 +108,7 @@ fun SettingsScreen(vm: AppViewModel) {
         }
     }
     Page("Settings", { vm.back() }, "screen_settings") {
-        Row48("About FilmCraft") { vm.show(Screen.About) }
+        Row48("About AVE") { vm.show(Screen.About) }
         if (stored.isNotEmpty()) {
             Spacer(Modifier.height(24.dp))
             Text("Downloaded for captions and speech", style = FcType.Label, color = Fc.Secondary, modifier = Modifier.padding(horizontal = 12.dp))
@@ -144,15 +144,15 @@ fun SettingsScreen(vm: AppViewModel) {
 @Composable
 fun AboutScreen(vm: AppViewModel) {
     val ctx = LocalContext.current
-    Page("About FilmCraft", { vm.back() }, "screen_about") {
+    Page("About AVE", { vm.back() }, "screen_about") {
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Fc.Layer1).padding(16.dp)) {
-            Image(painterResource(R.drawable.ic_launcher_tile), contentDescription = "FilmCraft", modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
+            Image(painterResource(R.drawable.ic_launcher_tile), contentDescription = "AVE", modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
             Spacer(Modifier.height(12.dp))
-            Text("FilmCraft for Android", style = FcType.Header, color = Fc.Title)
+            Text("AVE for Android", style = FcType.Header, color = Fc.Title)
             Text("Version ${vm.appVersion} (engine ${engineVersion()})", style = FcType.BodySmall, color = Fc.Detail)
             Spacer(Modifier.height(12.dp))
             Text(
-                "Built on FilmCraft's Rust engine. MIT OR Apache-2.0. FilmCraft is not affiliated with Adobe; Premiere is a trademark of Adobe Inc.",
+                "Built on the FilmCraft Rust engine. MIT OR Apache-2.0. AVE is not affiliated with Adobe; Premiere is a trademark of Adobe Inc.",
                 style = FcType.BodySmall,
                 color = Fc.Body,
             )

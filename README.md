@@ -2,11 +2,11 @@
   <img src="assets/app-icon/filmcraft-1024.png" alt="FilmCraft's app icon" width="128">
 </p>
 
-<h1 align="center">FilmCraft for Android</h1>
+<h1 align="center">AVE (Android Video Editor)</h1>
 
 <p align="center">
-  <b>FilmCraft-android is an open-source reimplementation of the Adobe Premiere Android app, created using the same Rust engine, <a href="https://github.com/storytold/filmcraft">FilmCraft</a>, as the desktop app, and built with a Kotlin/Jetpack Compose UI framework.</b><br>
-  Many credits to the original maintainers, <a href="https://github.com/storytold">storytold</a>.
+  <b>AVE is an open-source Android video editing software powered by ArtCraft's pure-Rust FilmCraft media engine and a native Kotlin/Jetpack Compose UI framework.</b><br>
+  Credits to the upstream engine maintainers, <a href="https://github.com/storytold">storytold</a> and the ArtCraft ecosystem.
 </p>
 
 <p align="center">

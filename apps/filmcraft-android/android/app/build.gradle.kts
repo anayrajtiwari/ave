@@ -80,8 +80,12 @@ abstract class CargoNdkBuild : DefaultTask() {
             "--remap-path-prefix=${File(workspaceDir.get()).absolutePath}=/filmcraft",
             "--remap-path-prefix=$cargoHome=/cargo",
         )
+        val cargoBin = File(System.getProperty("user.home"), ".cargo/bin").absolutePath
+        val currentPath = System.getenv("PATH") ?: ""
+        val resolvedPath = if (currentPath.contains(cargoBin)) currentPath else "$cargoBin:$currentPath"
         execOperations.exec {
             workingDir(workspaceDir.get())
+            environment("PATH", resolvedPath)
             environment("ANDROID_NDK_HOME", ndkDir.get())
             environment("CARGO_ENCODED_RUSTFLAGS", remap.joinToString("\u001f"))
             commandLine(
@@ -108,8 +112,12 @@ abstract class UniffiBindgen : DefaultTask() {
         val out = outputDir.get().asFile
         out.deleteRecursively()
         out.mkdirs()
+        val cargoBin = File(System.getProperty("user.home"), ".cargo/bin").absolutePath
+        val currentPath = System.getenv("PATH") ?: ""
+        val resolvedPath = if (currentPath.contains(cargoBin)) currentPath else "$cargoBin:$currentPath"
         execOperations.exec {
             workingDir(workspaceDir.get())
+            environment("PATH", resolvedPath)
             commandLine(
                 cargo.get(), "run", "--quiet", "-p", "filmcraft-android-bindgen", "--",
                 "generate", library.get().asFile.absolutePath, "--language", "kotlin", "--out-dir", out.absolutePath, "--no-format",

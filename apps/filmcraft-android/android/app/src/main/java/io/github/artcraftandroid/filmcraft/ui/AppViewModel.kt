@@ -280,7 +280,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app), EditorHost {
             return
         }
         // the project's name, with only the characters a file name can't hold replaced
-        val name = ed.project.name.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "_").trim().take(100).ifBlank { "FilmCraft" }
+        val name = ed.project.name.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "_").trim().take(100).ifBlank { "AVE" }
         val out = File(dir, "$name.mp4")
         exportPhase = ExportPhase.Running(0f)
         exportJob = viewModelScope.launch {

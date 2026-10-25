@@ -131,7 +131,7 @@ fun ExportScreen(vm: AppViewModel) {
                     is ExportPhase.Running -> {
                         Text("${Math.round(phase.progress * 100)}%", style = FcType.Header, color = Fc.Title, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                         LinearProgressIndicator(progress = { phase.progress }, color = Fc.Accent, trackColor = Fc.SliderOff, modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape))
-                        Text("Keep FilmCraft open until your video is ready.", style = FcType.BodySmall, color = Fc.Detail, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text("Keep AVE open until your video is ready.", style = FcType.BodySmall, color = Fc.Detail, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                     is ExportPhase.Done -> {
                         Text("Saved to your phone's Movies folder.", style = FcType.BodySmall, color = Fc.Detail, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
