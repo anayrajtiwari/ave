@@ -31,6 +31,7 @@ pub mod placement;
 pub mod presets;
 pub mod render;
 pub mod samples;
+pub mod soundcraft;
 pub mod speech;
 pub mod text;
 

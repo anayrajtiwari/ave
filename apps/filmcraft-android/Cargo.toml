@@ -28,6 +28,7 @@ filmcraft-frame = { workspace = true }
 # are downloaded by the app on first use, never shipped
 filmcraft-speech = { workspace = true, features = ["whisper"] }
 filmcraft-tts = { workspace = true, features = ["kokoro"] }
+soundcraft-dsp = { path = "../../crates/soundcraft-dsp" }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 log = { workspace = true }

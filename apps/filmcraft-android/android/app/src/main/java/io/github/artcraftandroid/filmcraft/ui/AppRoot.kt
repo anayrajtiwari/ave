@@ -25,6 +25,7 @@ import io.github.artcraftandroid.filmcraft.ui.home.AboutScreen
 import io.github.artcraftandroid.filmcraft.ui.home.HomeScreen
 import io.github.artcraftandroid.filmcraft.ui.home.LicencesScreen
 import io.github.artcraftandroid.filmcraft.ui.home.SettingsScreen
+import io.github.artcraftandroid.filmcraft.ui.soundcraft.SoundcraftStudioScreen
 
 /** The app: the current screen, and messages along the bottom. */
 @OptIn(ExperimentalComposeUiApi::class)
@@ -44,6 +45,7 @@ fun AppRoot(vm: AppViewModel) {
             Screen.Settings -> SettingsScreen(vm)
             Screen.About -> AboutScreen(vm)
             Screen.Licences -> LicencesScreen(vm)
+            Screen.SoundcraftStudio -> SoundcraftStudioScreen(vm)
         }
         SnackbarHost(snackbars, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 96.dp)) { data ->
             Snackbar(shape = RoundedCornerShape(8.dp), containerColor = Fc.Raised, contentColor = Fc.Title) {

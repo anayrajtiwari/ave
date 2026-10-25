@@ -1,0 +1,11 @@
+[package]
+name = "soundcraft-dsp"
+description = "SoundCraft DSP: realtime plugins (EQ, dynamics, reverb, delay, modulation, instruments), meters, loudness, and offline AudioSuite-style processing"
+version = "0.7.2"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = { workspace = true }
+log = { workspace = true }
+rustfft = "6"

@@ -92,6 +92,7 @@ fun HomeScreen(vm: AppViewModel) {
                 QuickTile(LucideIcons.FilePlus.glyph(), "New from files", "new_from_files") { vm.newProject(NewProject.Files) }
                 QuickTile(LucideIcons.SquarePlus.glyph(), "New blank project", "new_blank_project") { vm.newProject(NewProject.Blank) }
                 QuickTile(LucideIcons.AudioLines.glyph(), "Extract audio", "extract_audio_button") { vm.newProject(NewProject.ExtractAudio) }
+                QuickTile(LucideIcons.Music.glyph(), "SoundCraft Studio", "soundcraft_studio_button") { vm.show(Screen.SoundcraftStudio) }
             }
             if (vm.projectList.isNotEmpty()) {
                 Text("Your projects", style = FcType.Header, color = Fc.Title, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp).testTag("home_your_projects_header"))
