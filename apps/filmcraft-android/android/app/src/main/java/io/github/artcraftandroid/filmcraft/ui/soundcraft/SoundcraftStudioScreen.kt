@@ -1,5 +1,8 @@
 package io.github.artcraftandroid.filmcraft.ui.soundcraft
 
+import android.content.Context
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +27,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,10 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.artcraftandroid.filmcraft.core.SoundcraftDspParams
 import io.github.artcraftandroid.filmcraft.core.SoundcraftMeters
 import io.github.artcraftandroid.filmcraft.core.SoundcraftPreset
@@ -50,12 +58,21 @@ import io.github.artcraftandroid.filmcraft.ui.Fc
 import io.github.artcraftandroid.filmcraft.ui.FcIconButton
 import io.github.artcraftandroid.filmcraft.ui.FcSlider
 import io.github.artcraftandroid.filmcraft.ui.FcType
+import io.github.artcraftandroid.filmcraft.ui.GlyphIcon
 import io.github.artcraftandroid.filmcraft.ui.LucideIcons
 import io.github.artcraftandroid.filmcraft.ui.PrimaryButton
+import io.github.artcraftandroid.filmcraft.ui.editor.PickKind
+import io.github.artcraftandroid.filmcraft.ui.editor.VoiceRecorder
 import io.github.artcraftandroid.filmcraft.ui.glyph
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.RandomAccessFile
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.sin
 
 private enum class StudioTab { Equalizer, Dynamics, Reverb, Saturation, Plugins }
@@ -63,15 +80,45 @@ private val StudioGreen = Color(0xFF22C55E)
 
 @Composable
 fun SoundcraftStudioScreen(vm: AppViewModel) {
-    BackHandler { vm.back() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var params by remember { mutableStateOf(soundcraftDefaultParams()) }
     var selectedPreset by remember { mutableStateOf(SoundcraftPreset.NEUTRAL) }
     var activeTab by remember { mutableStateOf(StudioTab.Equalizer) }
     var meters by remember { mutableStateOf(SoundcraftMeters(-96f, -96f, 0f)) }
     var isProcessing by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("SoundCraft Audio Workstation Ready") }
-    val scope = rememberCoroutineScope()
+    var statusMessage by remember { mutableStateOf("Ready to import audio or record with microphone") }
+
+    // Audio file & recording state
+    var currentAudioFile by remember { mutableStateOf<File?>(null) }
+    var audioTitle by remember { mutableStateOf("No audio loaded") }
+    var isRecording by remember { mutableStateOf(false) }
+    var recordingRecorder by remember { mutableStateOf<VoiceRecorder?>(null) }
+    var recordingDurationSec by remember { mutableLongStateOf(0L) }
+    var recordingLevel by remember { mutableFloatStateOf(0f) }
+    var recordingJob by remember { mutableStateOf<Job?>(null) }
+
+    // Playback state
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    // Clean up media player and recorder on exit
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+            recordingRecorder?.stop()
+            recordingRecorder = null
+            recordingJob?.cancel()
+        }
+    }
+
+    BackHandler {
+        mediaPlayer?.stop()
+        recordingRecorder?.stop()
+        vm.back()
+    }
 
     Column(
         Modifier
@@ -92,7 +139,11 @@ fun SoundcraftStudioScreen(vm: AppViewModel) {
             FcIconButton(
                 glyph = LucideIcons.ChevronLeft.glyph(),
                 description = "Back",
-                onClick = { vm.back() }
+                onClick = {
+                    mediaPlayer?.stop()
+                    recordingRecorder?.stop()
+                    vm.back()
+                }
             )
             Text(
                 "SoundCraft Studio",
@@ -117,6 +168,218 @@ fun SoundcraftStudioScreen(vm: AppViewModel) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
+            // Audio Source & Recording Card
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Fc.Layer1)
+                    .border(1.dp, Fc.Hairline, RoundedCornerShape(16.dp))
+                    .padding(16.dp)
+            ) {
+                Column {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Audio Source", style = FcType.Label, color = Fc.Secondary)
+                        if (isRecording) {
+                            Text(
+                                "● REC ${recordingDurationSec}s",
+                                style = FcType.Badge,
+                                color = Fc.Recording,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // Buttons: Import File & Record Mic
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Import Audio File Button
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Fc.Raised)
+                                .clickable(role = Role.Button) {
+                                    vm.pick(PickKind.FilesAudio) { uris ->
+                                        val uri = uris.firstOrNull() ?: return@pick
+                                        scope.launch(Dispatchers.IO) {
+                                            runCatching {
+                                                val dest = File(context.cacheDir, "soundcraft_import_${System.currentTimeMillis()}.wav")
+                                                context.contentResolver.openInputStream(uri)?.use { input ->
+                                                    dest.outputStream().use { output -> input.copyTo(output) }
+                                                }
+                                                val floats = loadSamplesFromAudioFile(dest)
+                                                val m = soundcraftAnalyzeAudio(floats.toList(), 1u, 48000u)
+                                                withContext(Dispatchers.Main) {
+                                                    currentAudioFile = dest
+                                                    audioTitle = uri.lastPathSegment ?: "Imported Audio"
+                                                    meters = m
+                                                    statusMessage = "Loaded audio: ${floats.size / 48000}s, Peak: %.1f dB".format(m.peakDb)
+                                                    vm.tell("Audio loaded into SoundCraft Studio")
+                                                }
+                                            }.onFailure {
+                                                withContext(Dispatchers.Main) {
+                                                    vm.tell("Could not load audio file: ${it.message}")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                GlyphIcon(LucideIcons.Music.glyph(), Fc.Accent, size = 20.dp)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Import Audio", style = FcType.ToolLabel, color = Fc.Title)
+                            }
+                        }
+
+                        // Record Microphone Button
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isRecording) Fc.Recording else Fc.Raised)
+                                .clickable(role = Role.Button) {
+                                    if (isRecording) {
+                                        // Stop Recording
+                                        recordingRecorder?.stop()
+                                        recordingRecorder = null
+                                        isRecording = false
+                                        recordingJob?.cancel()
+                                        currentAudioFile?.let { recorded ->
+                                            scope.launch(Dispatchers.IO) {
+                                                val floats = loadSamplesFromAudioFile(recorded)
+                                                val m = soundcraftAnalyzeAudio(floats.toList(), 1u, 48000u)
+                                                withContext(Dispatchers.Main) {
+                                                    audioTitle = "Voice Recording (${recordingDurationSec}s)"
+                                                    meters = m
+                                                    statusMessage = "Recording saved: ${floats.size / 48000}s"
+                                                    vm.tell(statusMessage)
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        // Start Recording
+                                        vm.requestMicrophone {
+                                            val recFile = File(context.cacheDir, "soundcraft_rec_${System.currentTimeMillis()}.wav")
+                                            val recorder = VoiceRecorder(recFile)
+                                            if (recorder.start()) {
+                                                currentAudioFile = recFile
+                                                recordingRecorder = recorder
+                                                isRecording = true
+                                                recordingDurationSec = 0L
+                                                statusMessage = "Recording microphone input..."
+                                                recordingJob = scope.launch {
+                                                    val start = System.currentTimeMillis()
+                                                    while (isRecording) {
+                                                        recordingDurationSec = (System.currentTimeMillis() - start) / 1000
+                                                        recordingLevel = recorder.level
+                                                        delay(100)
+                                                    }
+                                                }
+                                            } else {
+                                                vm.tell("Could not initialize microphone recorder")
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                GlyphIcon(
+                                    LucideIcons.Mic.glyph(),
+                                    if (isRecording) Color.White else Fc.Recording,
+                                    size = 20.dp
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    if (isRecording) "Stop Rec" else "Record Mic",
+                                    style = FcType.ToolLabel,
+                                    color = if (isRecording) Color.White else Fc.Title
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+
+                    // Audio Track Info & Transport Play/Stop
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Fc.Raised)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(audioTitle, style = FcType.Body, color = Fc.Title, maxLines = 1)
+                            Text(
+                                if (currentAudioFile != null) "Ready for SoundCraft DSP mastering" else "Tap Import or Record to begin",
+                                style = FcType.BodySmall,
+                                color = Fc.Detail
+                            )
+                        }
+
+                        if (currentAudioFile != null) {
+                            // Play / Stop Button
+                            Box(
+                                Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Fc.Accent)
+                                    .clickable(role = Role.Button) {
+                                        if (isPlaying) {
+                                            mediaPlayer?.stop()
+                                            mediaPlayer?.release()
+                                            mediaPlayer = null
+                                            isPlaying = false
+                                        } else {
+                                            currentAudioFile?.let { file ->
+                                                runCatching {
+                                                    mediaPlayer?.release()
+                                                    mediaPlayer = MediaPlayer().apply {
+                                                        setDataSource(file.absolutePath)
+                                                        setOnCompletionListener { isPlaying = false }
+                                                        prepare()
+                                                        start()
+                                                    }
+                                                    isPlaying = true
+                                                }.onFailure {
+                                                    vm.tell("Playback error: ${it.message}")
+                                                }
+                                            }
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    if (isPlaying) "■" else "▶",
+                                    style = FcType.Body,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
             // Preset Selector Row
             Text("Mastering Presets", style = FcType.Label, color = Fc.Secondary)
             Spacer(Modifier.height(8.dp))
@@ -313,39 +576,53 @@ fun SoundcraftStudioScreen(vm: AppViewModel) {
 
             Spacer(Modifier.height(20.dp))
 
-            // Action / Processing Button
+            // Action / Processing Button: Master Audio Track
             PrimaryButton(
-                text = if (isProcessing) "Processing with SoundCraft..." else "Test Studio DSP Chain",
+                text = if (isProcessing) "Mastering with SoundCraft DSP..." else "Apply DSP & Master Audio",
                 onClick = {
                     if (isProcessing) return@PrimaryButton
                     isProcessing = true
-                    statusMessage = "Processing 48kHz audio buffer..."
+                    statusMessage = "Processing through SoundCraft DSP rack..."
                     scope.launch {
                         withContext(Dispatchers.Default) {
-                            // Synthesize a 48 kHz stereo audio buffer
-                            val sr = 48000
-                            val durationSec = 1.0f
-                            val totalSamples = (sr * durationSec).toInt() * 2 // stereo
-                            val input = FloatArray(totalSamples)
-                            for (i in 0 until totalSamples step 2) {
-                                val t = (i / 2).toFloat() / sr.toFloat()
-                                // rich chord (220 Hz A, 440 Hz A, 660 Hz E)
-                                val v = (0.4f * sin(2.0 * Math.PI * 220.0 * t) +
-                                         0.3f * sin(2.0 * Math.PI * 440.0 * t) +
-                                         0.2f * sin(2.0 * Math.PI * 660.0 * t)).toFloat()
-                                input[i] = v
-                                input[i + 1] = v
+                            val targetFile = currentAudioFile
+                            val inputSamples: FloatArray = if (targetFile != null && targetFile.exists()) {
+                                loadSamplesFromAudioFile(targetFile)
+                            } else {
+                                // synthesize 48kHz test chord
+                                val sr = 48000
+                                val total = sr * 2
+                                FloatArray(total) { i ->
+                                    val t = i.toFloat() / sr
+                                    (0.4f * sin(2.0 * Math.PI * 220.0 * t) +
+                                     0.3f * sin(2.0 * Math.PI * 440.0 * t) +
+                                     0.2f * sin(2.0 * Math.PI * 660.0 * t)).toFloat()
+                                }
                             }
 
-                            // Run through SoundCraft DSP pipeline (pure Rust)
-                            val processed = soundcraftProcessAudioBuffer(input.toList(), 2u, sr.toUInt(), params)
-                            val m = soundcraftAnalyzeAudio(processed, 2u, sr.toUInt())
+                            if (inputSamples.isEmpty()) {
+                                withContext(Dispatchers.Main) {
+                                    isProcessing = false
+                                    vm.tell("No audio samples to process")
+                                }
+                                return@withContext
+                            }
+
+                            // Run through SoundCraft pure-Rust DSP engine
+                            val processed = soundcraftProcessAudioBuffer(inputSamples.toList(), 1u, 48000u, params)
+                            val m = soundcraftAnalyzeAudio(processed, 1u, 48000u)
+
+                            // Save mastered WAV file
+                            val outFile = File(context.cacheDir, "soundcraft_mastered_${System.currentTimeMillis()}.wav")
+                            saveFloatArrayToWav(outFile, processed.toFloatArray(), 48000)
 
                             withContext(Dispatchers.Main) {
                                 meters = m
+                                currentAudioFile = outFile
+                                audioTitle = "Mastered Audio (${processed.size / 48000}s)"
                                 isProcessing = false
-                                statusMessage = "DSP Processed: Peak %.1f dB, RMS %.1f dB".format(m.peakDb, m.rmsDb)
-                                vm.tell(statusMessage)
+                                statusMessage = "Mastered: Peak %.1f dB, RMS %.1f dB".format(m.peakDb, m.rmsDb)
+                                vm.tell("SoundCraft mastering complete! Ready to play.")
                             }
                         }
                     }
@@ -468,4 +745,48 @@ private fun MeterBar(label: String, levelDb: Float) {
             )
         }
     }
+}
+
+/** Loads 16-bit PCM WAV samples into a float array normalized -1.0..1.0. */
+private fun loadSamplesFromAudioFile(file: File): FloatArray {
+    val bytes = file.readBytes()
+    if (bytes.size <= 44) return FloatArray(0)
+    val numSamples = (bytes.size - 44) / 2
+    val floats = FloatArray(numSamples)
+    val bb = ByteBuffer.wrap(bytes, 44, numSamples * 2).order(ByteOrder.LITTLE_ENDIAN)
+    for (i in 0 until numSamples) {
+        floats[i] = bb.short.toFloat() / 32768.0f
+    }
+    return floats
+}
+
+/** Writes a float array of PCM samples (-1.0..1.0) into a standard 16-bit mono WAV file. */
+private fun saveFloatArrayToWav(file: File, samples: FloatArray, sampleRate: Int) {
+    file.parentFile?.mkdirs()
+    val raf = RandomAccessFile(file, "rw")
+    raf.setLength(0)
+    val dataSize = samples.size * 2
+    val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN).apply {
+        put("RIFF".toByteArray())
+        putInt(dataSize + 36)
+        put("WAVEfmt ".toByteArray())
+        putInt(16) // PCM format header length
+        putShort(1) // PCM format
+        putShort(1) // Mono
+        putInt(sampleRate)
+        putInt(sampleRate * 2) // Byte rate
+        putShort(2) // Block align
+        putShort(16) // Bits per sample
+        put("data".toByteArray())
+        putInt(dataSize)
+    }
+    raf.write(header.array())
+
+    val buf = ByteBuffer.allocate(samples.size * 2).order(ByteOrder.LITTLE_ENDIAN)
+    for (s in samples) {
+        val clamped = (s.coerceIn(-1.0f, 1.0f) * 32767.0f).toInt().toShort()
+        buf.putShort(clamped)
+    }
+    raf.write(buf.array())
+    raf.close()
 }
