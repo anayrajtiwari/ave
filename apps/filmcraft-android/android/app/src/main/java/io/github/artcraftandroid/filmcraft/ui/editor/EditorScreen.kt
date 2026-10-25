@@ -79,6 +79,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.artcraftandroid.filmcraft.core.ClipKind
 import io.github.artcraftandroid.filmcraft.core.Placement
+import io.github.artcraftandroid.filmcraft.ui.editor.design.DesignCanvasSheet
+import io.github.artcraftandroid.filmcraft.ui.editor.guide.CraftAcademySheet
 import io.github.artcraftandroid.filmcraft.ui.Fc
 import io.github.artcraftandroid.filmcraft.ui.FcIconButton
 import io.github.artcraftandroid.filmcraft.ui.FcSize
@@ -99,6 +101,8 @@ import kotlinx.coroutines.launch
 fun EditorScreen(ed: EditorController) {
     BackHandler {
         when {
+            ed.designOpen -> ed.designOpen = false
+            ed.academyOpen -> ed.academyOpen = false
             ed.panel != null -> ed.panel = null
             ed.submenu != Submenu.None -> ed.submenu = Submenu.None
             ed.selectedClip != null || ed.selectedTransition != null || ed.selectedCaption != null -> ed.select(null)
@@ -113,6 +117,8 @@ fun EditorScreen(ed: EditorController) {
             .testTag("screen_editor"),
     ) {
         if (maxWidth >= 600.dp && maxWidth > maxHeight) SideBySide(ed) else Stacked(ed)
+        if (ed.designOpen) DesignCanvasSheet(ed)
+        if (ed.academyOpen) CraftAcademySheet(ed)
         ed.busy?.let { BusyOverlay(it) }
     }
 }
@@ -244,6 +250,8 @@ private fun TopBar(ed: EditorController, sideBySide: Boolean) {
             FcIconButton(LucideIcons.Redo2.glyph(), "Redo", { ed.redo() }, enabled = st?.canRedo == true, modifier = Modifier.testTag("editor_top_bar_redo_button"))
             Spacer(Modifier.width(8.dp))
         }
+        FcIconButton(Glyphs.GraduationCap, "Craft Academy", { ed.openAcademy() }, modifier = Modifier.testTag("editor_top_bar_academy_button"))
+        Spacer(Modifier.width(6.dp))
         Box(
             Modifier
                 .padding(end = 12.dp)

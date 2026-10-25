@@ -109,7 +109,6 @@ fun SettingsScreen(vm: AppViewModel) {
     }
     Page("Settings", { vm.back() }, "screen_settings") {
         Row48("About AVE") { vm.show(Screen.About) }
-        Row48("SoundCraft Audio Studio") { vm.show(Screen.SoundcraftStudio) }
         if (stored.isNotEmpty()) {
             Spacer(Modifier.height(24.dp))
             Text("Downloaded for captions and speech", style = FcType.Label, color = Fc.Secondary, modifier = Modifier.padding(horizontal = 12.dp))

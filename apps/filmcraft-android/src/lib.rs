@@ -27,16 +27,17 @@ use serde_json::{Value, json};
 pub mod edits;
 pub mod export;
 pub mod model;
+pub mod motion;
 pub mod placement;
 pub mod presets;
 pub mod render;
 pub mod samples;
-pub mod soundcraft;
 pub mod speech;
 pub mod text;
 
 use export::{ExportPlan, ExportSettings, ExportStatus};
 use model::TimelineInfo;
+pub use motion::{KeyframePoint, MotionInfo};
 use presets::PresetInfo;
 use render::Renderer;
 use speech::{CaptionLook, CaptionStatus, SpeechAudio, SpeechSettings};
@@ -629,6 +630,36 @@ impl MobileSession {
     /// Move, scale and turn a clip on the frame; `merge` folds a gesture into one undo step.
     pub fn set_placement(&self, clip: u64, x: f64, y: f64, scale: f64, rotation: f64, merge: bool) -> Result<(), MobileError> {
         placement::set_placement(&mut self.lock(), clip, x, y, scale, rotation, merge)
+    }
+
+    /// Query motion attributes and existing keyframes of a clip.
+    pub fn motion_info(&self, clip: u64) -> Result<MotionInfo, MobileError> {
+        let s = self.lock();
+        motion::motion_info(&s, clip)
+    }
+
+    /// Set an animation preset on a clip (e.g. "fade_in", "fade_out", "slide_left", "pop", "ken_burns", etc.).
+    pub fn set_motion_preset(&self, clip: u64, preset: String, duration_sec: f64) -> Result<(), MobileError> {
+        self.main_edit(|s| motion::set_motion_preset(s, clip, &preset, duration_sec))
+    }
+
+    /// Reset or clear motion and opacity keyframes back to static state.
+    pub fn clear_motion(&self, clip: u64) -> Result<(), MobileError> {
+        self.main_edit(|s| motion::clear_motion(s, clip))
+    }
+
+    /// Add or update a keyframe at `time_offset_ms` from clip start.
+    pub fn add_motion_keyframe(
+        &self,
+        clip: u64,
+        time_offset_ms: i64,
+        scale: Option<f64>,
+        rotation: Option<f64>,
+        x: Option<f64>,
+        y: Option<f64>,
+        opacity: Option<f64>,
+    ) -> Result<(), MobileError> {
+        self.main_edit(|s| motion::add_motion_keyframe(s, clip, time_offset_ms, scale, rotation, x, y, opacity))
     }
 
     // ---- project ----

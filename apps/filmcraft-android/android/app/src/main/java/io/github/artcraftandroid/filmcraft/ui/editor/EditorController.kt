@@ -18,6 +18,8 @@ import io.github.artcraftandroid.filmcraft.core.ClipInfo
 import io.github.artcraftandroid.filmcraft.core.ClipKind
 import io.github.artcraftandroid.filmcraft.core.LaneKind
 import io.github.artcraftandroid.filmcraft.core.MobileSession
+import io.github.artcraftandroid.filmcraft.core.MotionInfo
+import java.io.File
 import io.github.artcraftandroid.filmcraft.core.Renderer
 import io.github.artcraftandroid.filmcraft.core.SessionStatus
 import io.github.artcraftandroid.filmcraft.core.SpeechAudio
@@ -55,6 +57,7 @@ sealed interface Panel {
     data object TextStyle : Panel
     data object AspectRatio : Panel
     data object Voiceover : Panel
+    data object Motion : Panel
     /** Captions: make them, and their look. */
     data object Captions : Panel
     /** Text to speech: new speech ([clip] empty) or saying a speech clip again. */
@@ -121,6 +124,12 @@ class EditorController(
     var typing by mutableStateOf("")
     /** A clip is being dragged or trimmed: tools wait. */
     var gesture by mutableStateOf(false)
+    /** In-Editor DesignCraft & VectorCraft studio open state. */
+    var designOpen by mutableStateOf(false)
+    /** Frozen frame or preview snapshot to use as design backdrop. */
+    var designBackdrop by mutableStateOf<ImageBitmap?>(null)
+    /** In-context Craft Academy guidance sheet. */
+    var academyOpen by mutableStateOf(false)
 
     val media = MediaCache(engine, scope)
     private var renderer: Renderer? = null
@@ -547,6 +556,76 @@ class EditorController(
     suspend fun textStyle(clip: ULong): TextStyle? = runCatching { engine.command { textStyle(clip) } }.getOrNull()
 
     fun setTextStyle(clip: ULong, style: TextStyle, merge: Boolean, all: Boolean = false) = quickEdit { setTextStyle(clip, style, merge, all) }
+
+    // ---- motion & keyframes (EffectCraft) ----
+
+    suspend fun motionInfo(clip: ULong): MotionInfo? = runCatching { engine.command { motionInfo(clip) } }.getOrNull()
+
+    fun setMotionPreset(clip: ULong, preset: String, durationSec: Double = 0.8) = edit {
+        setMotionPreset(clip, preset, durationSec)
+    }
+
+    fun clearMotion(clip: ULong) = edit {
+        clearMotion(clip)
+    }
+
+    fun addMotionKeyframe(
+        clip: ULong,
+        timeOffsetMs: Long,
+        scale: Double? = null,
+        rotation: Double? = null,
+        x: Double? = null,
+        y: Double? = null,
+        opacity: Double? = null,
+    ) = edit {
+        addMotionKeyframe(clip, timeOffsetMs, scale, rotation, x, y, opacity)
+    }
+
+    // ---- design & vector craft ----
+
+    fun openDesign(useCurrentFrame: Boolean = true) {
+        designBackdrop = if (useCurrentFrame) picture else null
+        designOpen = true
+    }
+
+    fun freezeAndDesign() {
+        val c = selectedClip ?: return
+        freeze()
+        designBackdrop = picture
+        designOpen = true
+    }
+
+    fun openAcademy() {
+        academyOpen = true
+    }
+
+    fun insertDesignStill(bitmap: Bitmap, asOverlay: Boolean = false, replace: Boolean = false) {
+        scope.launch {
+            busy = "Saving design…"
+            try {
+                val dir = project.mediaDir.apply { mkdirs() }
+                val file = File(dir, "design_${System.currentTimeMillis()}.png")
+                withContext(Dispatchers.IO) {
+                    file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                }
+                val path = file.absolutePath
+                val c = selectedClip
+                engine.command {
+                    when {
+                        replace && c != null -> replace(c.id, path)
+                        else -> addMedia(listOf(path))
+                    }
+                }
+                designOpen = false
+                host.tell("Design added to timeline")
+            } catch (e: Exception) {
+                host.tell(e.userMessage)
+            } finally {
+                busy = null
+            }
+            refresh()
+        }
+    }
 
     // ---- speech ----
 

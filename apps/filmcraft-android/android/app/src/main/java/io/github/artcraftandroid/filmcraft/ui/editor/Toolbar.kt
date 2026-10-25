@@ -106,6 +106,7 @@ private fun ToolRow(tools: List<Tool>, back: (() -> Unit)?, deep: Boolean, modif
 }
 
 private fun addTools(ed: EditorController) = listOf(
+    Tool("editor_tool_design", "Design", Glyphs.Palette) { ed.openDesign(useCurrentFrame = true) },
     Tool("editor_tool_audio", "Audio", LucideIcons.Music.glyph()) { ed.submenu = Submenu.AddAudio },
     Tool("editor_tool_text", "Text", LucideIcons.Type.glyph()) { ed.panel = Panel.TextInput(null) },
     Tool("editor_tool_captions", "Captions", LucideIcons.Captions.glyph(), enabled = ed.duration > 0) { ed.panel = Panel.Captions },
@@ -137,7 +138,9 @@ private fun clipTools(ed: EditorController, c: ClipInfo): List<Tool> {
     val duplicate = Tool("editor_tool_duplicate", "Duplicate", LucideIcons.CopyPlus.glyph()) { ed.duplicate() }
     val replace = Tool("editor_tool_replace", "Replace", LucideIcons.Replace.glyph()) { ed.replaceSelected() }
     val onMain = ed.isMain(c.id)
+    val motion = Tool("editor_tool_motion", "Motion", Glyphs.Move, active = ed.panel == Panel.Motion) { ed.panel = Panel.Motion }
     val picture = listOfNotNull(
+        motion,
         Tool("editor_tool_filters", "Filters", LucideIcons.SwatchBook.glyph()) { ed.panel = Panel.Filters },
         if (onMain) Tool("editor_tool_effects", "Effects", LucideIcons.WandSparkles.glyph()) { ed.panel = Panel.Effects } else null,
         Tool("editor_tool_opacity", "Opacity", Glyphs.Checker) { ed.panel = Panel.Opacity },
@@ -151,6 +154,7 @@ private fun clipTools(ed: EditorController, c: ClipInfo): List<Tool> {
         ClipKind.TEXT -> listOf(
             Tool("editor_tool_edit_text", "Edit text", LucideIcons.Keyboard.glyph()) { ed.panel = Panel.TextInput(c.id) },
             Tool("editor_tool_style", "Style", LucideIcons.Paintbrush.glyph()) { ed.panel = Panel.TextStyle },
+            motion,
             split, delete, duplicate,
         )
         ClipKind.AUDIO -> listOfNotNull(
@@ -179,6 +183,7 @@ private fun captionTools(ed: EditorController, id: ULong) = listOf(
 private fun retimeTools(ed: EditorController, c: ClipInfo) = listOf(
     Tool("editor_tool_speed", "Speed", LucideIcons.Gauge.glyph(), active = ed.panel == Panel.Speed) { ed.panel = Panel.Speed },
     Tool("editor_tool_freeze", "Freeze", LucideIcons.Snowflake.glyph(), enabled = ed.playhead >= c.start && ed.playhead < c.start + c.duration - ed.frameTicks) { ed.freeze() },
+    Tool("editor_tool_freeze_design", "Freeze & Design", Glyphs.Palette, enabled = ed.playhead >= c.start && ed.playhead < c.start + c.duration - ed.frameTicks) { ed.freezeAndDesign() },
 )
 
 private fun clipAudioTools(ed: EditorController, c: ClipInfo) = listOf(

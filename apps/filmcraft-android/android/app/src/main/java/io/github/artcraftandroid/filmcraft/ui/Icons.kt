@@ -121,4 +121,52 @@ object Glyphs {
         val colors = listOf(Color.Red, Color.Yellow, Color.Green, Color.Cyan, Color.Blue, Color.Magenta, Color.Red)
         drawCircle(androidx.compose.ui.graphics.Brush.sweepGradient(colors), u(9f), Offset(u(12f), u(12f)), style = Stroke(u(3.5f)))
     }
+
+    /** Palette for DesignCraft & VectorCraft. */
+    val Palette = Glyph.Drawn { c ->
+        drawCircle(c, u(8.5f), Offset(u(12f), u(12f)), style = Stroke(u(1.8f)))
+        drawCircle(c, u(1.2f), Offset(u(9f), u(9f)))
+        drawCircle(c, u(1.2f), Offset(u(14f), u(8.5f)))
+        drawCircle(c, u(1.2f), Offset(u(16f), u(13f)))
+        drawCircle(c, u(1.8f), Offset(u(10f), u(15f)), style = Stroke(u(1.2f)))
+    }
+
+    /** Kinetic Move for EffectCraft. */
+    val Move = Glyph.Drawn { c ->
+        val s = Stroke(width = u(1.8f), cap = StrokeCap.Round, join = StrokeJoin.Round)
+        drawLine(c, Offset(u(12f), u(4f)), Offset(u(12f), u(20f)), u(1.8f), StrokeCap.Round)
+        drawLine(c, Offset(u(4f), u(12f)), Offset(u(20f), u(12f)), u(1.8f), StrokeCap.Round)
+        val p = Path().apply {
+            moveTo(u(9f), u(7f)); lineTo(u(12f), u(4f)); lineTo(u(15f), u(7f))
+            moveTo(u(9f), u(17f)); lineTo(u(12f), u(20f)); lineTo(u(15f), u(17f))
+            moveTo(u(7f), u(9f)); lineTo(u(4f), u(12f)); lineTo(u(7f), u(15f))
+            moveTo(u(17f), u(9f)); lineTo(u(20f), u(12f)); lineTo(u(17f), u(15f))
+        }
+        drawPath(p, c, style = s)
+    }
+
+    /** Graduation Cap for Craft Academy. */
+    val GraduationCap = Glyph.Drawn { c ->
+        val s = Stroke(width = u(1.8f), cap = StrokeCap.Round, join = StrokeJoin.Round)
+        val p = Path().apply {
+            moveTo(u(12f), u(5f)); lineTo(u(21f), u(9.5f)); lineTo(u(12f), u(14f)); lineTo(u(3f), u(9.5f)); close()
+            moveTo(u(6f), u(11f)); lineTo(u(6f), u(16.5f)); quadraticTo(u(12f), u(20f), u(18f), u(16.5f)); lineTo(u(18f), u(11f))
+        }
+        drawPath(p, c, style = s)
+    }
+
+    /** Overlapping Shapes. */
+    val Shapes = Glyph.Drawn { c ->
+        val s = Stroke(width = u(1.6f))
+        drawCircle(c, u(5f), Offset(u(8.5f), u(9.5f)), style = s)
+        drawRect(c, Offset(u(9.5f), u(8.5f)), Size(u(9f), u(9f)), style = s)
+    }
+
+    /** Layout Template. */
+    val Template = Glyph.Drawn { c ->
+        val s = Stroke(width = u(1.6f))
+        drawRoundRect(c, Offset(u(3f), u(4f)), Size(u(18f), u(16f)), CornerRadius(u(2f)), style = s)
+        drawLine(c, Offset(u(3f), u(9f)), Offset(u(21f), u(9f)), u(1.6f))
+        drawLine(c, Offset(u(9f), u(9f)), Offset(u(9f), u(20f)), u(1.6f))
+    }
 }

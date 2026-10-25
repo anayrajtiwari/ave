@@ -53,6 +53,7 @@ import io.github.artcraftandroid.filmcraft.core.transitionSample
 import io.github.artcraftandroid.filmcraft.core.filterPresets
 import io.github.artcraftandroid.filmcraft.core.transitionPresets
 import io.github.artcraftandroid.filmcraft.engine.toBitmap
+import io.github.artcraftandroid.filmcraft.ui.editor.motion.MotionPanel
 import io.github.artcraftandroid.filmcraft.ui.Fc
 import io.github.artcraftandroid.filmcraft.ui.FcSize
 import io.github.artcraftandroid.filmcraft.ui.FcSlider
@@ -80,6 +81,7 @@ fun EditorPanel(ed: EditorController, panel: Panel, modifier: Modifier = Modifie
         Panel.Opacity -> clip?.let { OpacityPanel(ed, it, close, modifier) }
         Panel.Filters -> clip?.let { LookPanel(ed, it, filters = true, close, modifier) }
         Panel.Effects -> clip?.let { LookPanel(ed, it, filters = false, close, modifier) }
+        Panel.Motion -> clip?.let { MotionPanel(ed, it, close, modifier) }
         is Panel.Transitions -> TransitionPanel(ed, panel, close, modifier)
         Panel.AspectRatio -> AspectPanel(ed, close, modifier)
         Panel.TextStyle -> clip?.let { TextStylePanel(ed, it, close, modifier) }
